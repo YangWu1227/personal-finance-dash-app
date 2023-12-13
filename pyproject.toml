@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "personal-finance-dashboard"
+version = "0.1.0"
+description = "A Dash application for tracking spending and managing personal finance"
+authors = ["YangWu1227 <yangwu2020@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<4"
+dash = ">=2.14.2"
+pandas = ">=2.1.4"
+dash-bootstrap-components = ">=1.5.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
