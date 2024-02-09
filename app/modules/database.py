@@ -36,6 +36,29 @@ def add_category_to_db(category_name: str, db_path: str) -> None:
     """
     with sqlite3.connect(db_path) as conn:
         conn.execute("INSERT INTO categories (category_name) VALUES (?)", (category_name,))
+        
+def read_spending_data(db_path: str) -> pd.DataFrame:
+    """
+    Reads the spending data from the database and returns it as a pandas DataFrame.
+    
+    Parameters
+    ----------
+    db_path : str
+        The path to the database. 
+        
+    Returns
+    -------
+    pd.DataFrame
+        The spending data.
+    """
+    with sqlite3.connect(db_path) as conn:
+        spending_data = pd.read_sql_query(
+            sql='SELECT * FROM spending', 
+            con=conn, 
+            index_col='id',
+            parse_dates='timestamp'
+        )
+    return spending_data
 
 def main():
     
