@@ -10,7 +10,11 @@ python = ">=3.11,<4"
 dash = ">=2.14.2"
 pandas = ">=2.1.4"
 dash-bootstrap-components = ">=1.5.0"
+plotly = ">=5.18.0"
 
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = ">=6.29.2"
 
 [build-system]
 requires = ["poetry-core"]
