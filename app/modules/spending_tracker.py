@@ -1,5 +1,6 @@
 import sqlite3
 from typing import Union, List, Dict, Tuple
+from datetime import datetime
 
 import dash
 from dash import html, dcc, Input, Output, State
@@ -52,7 +53,26 @@ def layout() -> dbc.Container:
             dbc.Col([
                 dbc.Card([
                     dbc.CardBody([
-                        dcc.Input(id='spending_amount', type='number', placeholder='Amount', className='mb-2'),
+                        dbc.Row([ 
+                            dbc.Col(
+                                dcc.Input(
+                                    id='spending_amount', 
+                                    type='number', 
+                                    placeholder='Amount', 
+                                    className='mb-2 form-control'
+                                ),
+                                width=5  
+                            ),
+                            dbc.Col(
+                                dcc.DatePickerSingle(
+                                    id='spending_date',
+                                    date=pd.to_datetime('today').strftime('%Y-%m-%d'), # Set today's date as default
+                                    display_format='YYYY-MM-DD',
+                                    className='mb-2'
+                                ),
+                                width=4 
+                            ),
+                        ], className='mb-2'),
                         dcc.Dropdown(
                             id='category_dropdown',
                             options=updated_dropdown_options_with_add_new,
@@ -72,6 +92,9 @@ def layout() -> dbc.Container:
         ]),
         
         # ------------------------------- Plotting card ------------------------------ #
+        
+        # Add a bit of spacing between the input card and the plotting cards
+        html.Br(),
         
         dbc.Row([
             dbc.Col([
@@ -273,9 +296,10 @@ def register_callbacks(app: dash.Dash) -> None:
         Output('output-container', 'children'),
         [Input('submit_button', 'n_clicks')],
         [State('spending_amount', 'value'),
-        State('category_dropdown', 'value')]
+         State('category_dropdown', 'value'),
+         State('spending_date', 'date')]
     )
-    def update_output(n_clicks: Union[int, None], amount: Union[int, float, None], category: Union[str, None]) -> dbc.Alert:
+    def update_output(n_clicks: Union[int, None], amount: Union[int, float, None], category: Union[str, None], spending_date: Union[str, None]) -> dbc.Alert:
         """
         This callback updates the output container with the amount and category of the spending.
         
@@ -287,6 +311,8 @@ def register_callbacks(app: dash.Dash) -> None:
             The amount of the spending.
         category : Union[str, None]
             The category of the spending.
+        spending_date : Union[str, None]
+            The date of the spending.
             
         Returns
         -------
@@ -296,6 +322,10 @@ def register_callbacks(app: dash.Dash) -> None:
         if n_clicks is None:
             return dash.no_update
         
+        current_time = datetime.now().strftime('%H:%M:%S')
+        datetime_str = f"{spending_date} {current_time}"
+        spending_datetime = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
+
         if n_clicks > 0:
             if amount is None or category is None:
                 return dbc.Alert('Please enter a valid amount and select a category', color='danger', duration=3000)
@@ -303,7 +333,7 @@ def register_callbacks(app: dash.Dash) -> None:
                 try:
                     conn = sqlite3.connect(db_path)
                     c = conn.cursor()
-                    c.execute('INSERT INTO spending (amount, category) VALUES (?, ?)', (amount, category))
+                    c.execute('INSERT INTO spending (amount, category, timestamp) VALUES (?, ?, ?)',  (amount, category, spending_datetime))
                     conn.commit()
                 except sqlite3.Error as e:
                     return dbc.Alert(f'Database error: {e}', color='danger', duration=3000)
